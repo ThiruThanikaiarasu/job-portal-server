@@ -8,6 +8,10 @@ const findUserByEmailWithPasswordFromDB = (email: string) => {
     return User.findOne({ email }).select('+password')
 }
 
+const findUserByIdFromDB = ( id: string ) => {
+    return User.findOne({ _id: id})
+}
+
 const createUserInDB = async (userData: Partial<IUser>) => {
     const newUser = new User(userData)
     const savedUser = await newUser.save()
@@ -17,5 +21,6 @@ const createUserInDB = async (userData: Partial<IUser>) => {
 export {
     findUserByEmailFromDB,
     findUserByEmailWithPasswordFromDB,
+    findUserByIdFromDB,
     createUserInDB
 }
