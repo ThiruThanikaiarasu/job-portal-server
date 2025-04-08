@@ -1,6 +1,9 @@
 import mongoose from 'mongoose'
+
+import { ENV } from './../utils/env'
+
 const connectToDatabase = async () => {
-    const dbUrl = process.env.DB_URL
+    const dbUrl = ENV.DB_URL
 
     if(!dbUrl) {
         throw new Error('Environment variable DB_URL must be defined') 
