@@ -8,6 +8,7 @@ import cors from 'cors'
 import cookieParser from 'cookie-parser'
 
 import authRoute from './routes/authRoute'
+import jobRoute from './routes/jobRoute'
 import { ENV } from './utils/env'
 
 app.use(cors({
@@ -24,5 +25,6 @@ app.get('/', (request: Request, response: Response) => {
 })
 
 app.use('/api/v1/auth', authRoute)
+app.use('/api/v1/jobs', jobRoute)
 
 export default app
