@@ -18,9 +18,40 @@ const createAJobInDB = async (
     return savedJob
 }
 
-const fetchAllJobsFromDB = async () => {
-    return Job.find()
+interface JobFilters {
+    searchQuery: string
+    location: string
+    jobType: string
+    minSalary: number
+    maxSalary: number
 }
+
+const fetchAllJobsFromDB = async (filters: JobFilters) => {
+    const { searchQuery, location, jobType, minSalary, maxSalary } = filters
+
+    let query: any= { }
+
+      query.$and = [
+        { salaryMin: { $lte: minSalary } },
+        { salaryMax: { $gte: maxSalary } },  // DB's salaryMax ≥ user's maxSalary
+      ];
+    
+
+    if (searchQuery) {
+        query.title = { $regex: searchQuery, $options: 'i' }  
+    }
+
+    if (location) {
+        query.location = { $regex: location, $options: 'i' }
+    }
+
+    if (jobType) {
+        query.jobType = jobType
+    }
+    
+    return Job.find(query)
+}
+
 
 const updateJobInDB = (jobId: string, updateData: Partial<JobRequestBody>) => {
     return Job.findByIdAndUpdate(jobId, updateData, { new: true })

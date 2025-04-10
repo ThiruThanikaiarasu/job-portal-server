@@ -4,6 +4,7 @@ import mongoose from 'mongoose'
 import { setResponseBody } from '../utils/responseFormatter'
 import { AuthUser, JobRequestBody } from '../types/job'
 import { createAJobInDB, deleteJobFromDB, fetchAllJobsFromDB, findJobByIdFromDB, findJobByTitleAndCompanyFromDB, updateJobInDB } from '../repositories/jobRepository'
+import { convertToLPA } from '../services/jobService'
 
 interface AuthenticatedRequest extends Request {
     user?: AuthUser
@@ -38,26 +39,45 @@ const createAJob = async (request: AuthenticatedRequest, response: Response) => 
 
 const getAllJobs = async (request: Request, response: Response) => {
     try {
-        const jobs = await fetchAllJobsFromDB()
+        // Extract query parameters with default values
+        const {
+            searchQuery = '',
+            location = '',
+            jobType = '',
+            minSalary = '50000',
+            maxSalary = '80000'
+        } = request.query
+
+        let min = parseInt(minSalary as string, 10)
+        let max = parseInt(maxSalary as string, 10)
+
+        min = convertToLPA(min)
+        max = convertToLPA(max)
+
+        const jobs = await fetchAllJobsFromDB({
+            searchQuery: searchQuery as string,
+            location: location as string,
+            jobType: jobType as string,
+            minSalary: min,
+            maxSalary: max
+        })
 
         response.status(200).send(setResponseBody("Jobs fetched", null, jobs))
-    }
-    catch(error) {
-        if(error instanceof Error) {
+    } catch (error) {
+        if (error instanceof Error) {
             response.status(500).send(setResponseBody(error.message, 'server_error', null))
+        } else {
+            response.status(500).send(setResponseBody(String(error), 'server_error', null))
         }
-        
-        response.status(500).send(setResponseBody(String(error), 'server_error', null))
     }
 }
 
+
 const updateJob = async (request: AuthenticatedRequest, response: Response) => {
     try {
-        console.log(request.user)
         const jobId = request.params.id
         const user = request.user!
         const updateData: Partial<JobRequestBody> = request.body
-        console.log(updateData)
         delete (updateData as any)._id
 
         const job = await findJobByIdFromDB(jobId)
@@ -72,14 +92,11 @@ const updateJob = async (request: AuthenticatedRequest, response: Response) => {
             return
         }
 
-        console.log(updateData)
 const updatedJob = await updateJobInDB(jobId, updateData)
-console.log(updatedJob)
 
         response.status(200).send(setResponseBody("Job updated successfully", null, updatedJob))
     }
     catch (error) {
-        console.log(error)
         if (error instanceof Error) {
             response.status(500).send(setResponseBody(error.message, 'server_error', null))
         } else {
