@@ -31,10 +31,10 @@ const fetchAllJobsFromDB = async (filters: JobFilters) => {
 
     let query: any= { }
 
-      query.$and = [
-        { salaryMin: { $lte: minSalary } },
-        { salaryMax: { $gte: maxSalary } },  // DB's salaryMax ≥ user's maxSalary
-      ];
+    query.$and = [
+        { salaryMin: { $lte: maxSalary } },
+        { salaryMax: { $gte: minSalary } }  
+      ]      
     
 
     if (searchQuery) {
